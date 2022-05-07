@@ -12,6 +12,8 @@ e. create an event that emits a trafer log > wjher eos os being minted tp, the i
 contract ERC721 {
 
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+
+    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
     // mapping from token id to the owner
 
     mapping(uint => address) private _tokenOwner;
@@ -84,6 +86,21 @@ contract ERC721 {
     }
 
     function transferFrom(address _from, address _to, uint256 _tokenId) public {
+        require(isApprovedOwner(msg.sender, _tokenId));
         _transferFrom(_from, _to, _tokenId);
+    }
+
+    function approve(address _to, uint256 _tokenId) public {
+        address owner = ownerOf(_tokenId);
+        require(_to != owner, "Error - approval to current owner");
+        require(msg.sender == owner , "Current owner is not the owner of the token");
+        _tokenApprovals[_tokenId] = _to;
+        emit Approval(owner, _to, _tokenId);
+    }
+
+    function isApprovedOwner(address _spender, uint256 _tokenId) internal view returns(bool) {
+        require(_exists(_tokenId),'token does not exists');
+        address owner = ownerOf(_tokenId);
+        return (_spender == owner);
     }
 }

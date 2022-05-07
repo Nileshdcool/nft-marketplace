@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import './ERC165.sol';
+import './interfaces/IERC721.sol';
 
 /*
 a. nft to point to an address
@@ -9,11 +11,8 @@ d. keep track of how many tokens an owner address has
 e. create an event that emits a trafer log > wjher eos os being minted tp, the id etc
 */
 
-contract ERC721 {
+contract ERC721 is ERC165, IERC721 {
 
-    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
-
-    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
     // mapping from token id to the owner
 
     mapping(uint => address) private _tokenOwner;
@@ -25,13 +24,14 @@ contract ERC721 {
     //mapping from toneid to approved addresses
     mapping(uint256 => address) private _tokenApprovals;
 
-     /// @notice Count all NFTs assigned to an owner
-    /// @dev NFTs assigned to the zero address are considered invalid, and this
-    ///  function throws for queries about the zero address.
-    /// @param _owner An address for whom to query the balance
-    /// @return The number of NFTs owned by `_owner`, possibly zero
+    constructor() {
+        _registerInterface(bytes4(keccak256('balanceOf(bytes4)')) ^
+        bytes4(keccak256('ownerOf(bytes4)')) ^ 
+        bytes4(keccak256('transferFrom(bytes4)')));
+    }
+     
 
-    function balanceOf(address _owner) public view returns(uint256)
+    function balanceOf(address _owner) public view override returns(uint256)
     {
         require(_owner != address(0), 'ERC721: owner query non-existent token');
         return _ownedTokensCount[_owner];
@@ -42,7 +42,7 @@ contract ERC721 {
     ///  about them do throw.
     /// @param _tokenId The identifier for an NFT
     /// @return The address of the owner of the NFT
-    function ownerOf(uint256 _tokenId) public view returns (address)
+    function ownerOf(uint256 _tokenId) public view override returns (address)
     {
         address owner = _tokenOwner[_tokenId];
          require(owner != address(0), 'ERC721: owner query non-existent token');
@@ -85,7 +85,7 @@ contract ERC721 {
 
     }
 
-    function transferFrom(address _from, address _to, uint256 _tokenId) public {
+    function transferFrom(address _from, address _to, uint256 _tokenId) public override {
         require(isApprovedOwner(msg.sender, _tokenId));
         _transferFrom(_from, _to, _tokenId);
     }

@@ -39,6 +39,7 @@ class App extends Component {
     async loadWeb3() {
         const provider = await detectEthereumProvider();
         if (provider) {
+            
             console.log('ethereum wallet is connected');
             window.web3 = new Web3(provider);
         } else {
